@@ -53,11 +53,15 @@ if __name__ == "__main__" :
     morph_pos_dict = make_morph_dict("grammar.txt")
     trie = Trie()
 
+    for elem in morph_pos_dict:
+        trie.add(elem, morph_pos_dict[elem])
+
+
     """
     2. 형태소 분석(Tabular parsing)
     """
     morph_connect_rule = make_morph_connect_rule("grammar.txt")
-    print(morph_connect_rule)
+    # print(morph_connect_rule)
     # TabularParse(trie, morph_connect_rule)
 
 
