@@ -21,8 +21,6 @@ class Parser(object):
         self.f_output = open("output.txt", "w")
         self.idx = 1
 
-    def write_used_grammar(self, used_grammar=[]):
-        pass
 
     def init_parse_table(self, input):
         self.idx = 1
@@ -35,11 +33,16 @@ class Parser(object):
             for elem in self._lexicon[token]:
                 base_node = Node(self.idx, symbol=token)
                 self.parse_table[i][i+1].append(base_node)
+                self.f_grammar.write(str(base_node.idx) + " (" + elem + ", " + token + ")"+"\n")
                 self.idx += 1
              
                 # 2. initialize using _lexicon_rules
                 if elem in self._lexicon_rules:
-                    self.parse_table[i][i+1].append(Node(idx=self.idx, symbol=self._lexicon_rules[elem][0], child=base_node))
+                    new_node = Node(idx=self.idx, symbol=self._lexicon_rules[elem][0], child=base_node)
+                    self.parse_table[i][i+1].append(new_node)
+                    self.f_grammar.write(str(new_node.idx) + " (" + new_node.symbol + ", " 
+                        + "(" + str(new_node.child.idx)+")"
+                        +")"+"\n")
                     self.idx += 1
 
 
@@ -56,7 +59,13 @@ class Parser(object):
                 # check grammar using _two_symbols_rules
                 for rule in self._two_symbols_rules.items():
                     if new_rule in rule[1]:
-                        _list.append(Node(idx=self.idx, symbol=rule[0], left=left_node, down=down_node))
+                        new_node = Node(idx=self.idx, symbol=rule[0], left=left_node, down=down_node)
+                        _list.append(new_node)
+                        self.f_grammar.write(str(new_node.idx) + " (" + new_node.symbol + ", " 
+                        + "(" + str(new_node.left.idx)+", "+str(new_node.down.idx)+")"+")"
+                        +")"+"\n")
+     
+                        
                         self.idx += 1
         return _list
                         
@@ -99,5 +108,6 @@ class Parser(object):
             visited, final_output = self.dfs(node=root, _visited=[], _output="")
             self.f_output.write(final_output+"\n")
         self.f_output.write("\n")
+        self.f_grammar.write("\n")
 
 
