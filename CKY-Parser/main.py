@@ -1,4 +1,4 @@
-# from parser import *
+from parser import *
 
 def get_grammar_info(filename):
     _two_symbols_rules = {}
@@ -35,20 +35,21 @@ def get_grammar_info(filename):
 
     return _two_symbols_rules, _lexicon_rules, _lexicon
 
-def read_input():
-    pass
 
 if __name__ == "__main__":
     """
     1. load & save grammar.txt
     2. load input.txt
-        make seq. of terminals from input string
+        - make seq. of terminals from input string
     3. CKY parser
-        use seq.of terminals && CFG
-        generate used_grammar.txt
+        - use seq.of terminals && CFG
+        - generate used_grammar.txt
     4. generate output.txt(parse tree)
     """
 
     two_symbols_rules, lexicon_rules, lexicon = get_grammar_info(filename = "grammar.txt")
-    read_input()
+    parser = Parser(two_symbols_rules, lexicon_rules, lexicon)
+    with open("input.txt", 'r') as f:
+        for line in f.readlines():
+            parser.parse(line.strip().split(" "))
 
