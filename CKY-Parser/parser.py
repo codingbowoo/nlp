@@ -1,11 +1,12 @@
 from pprint import * 
 
 class Node(object):
-    def __init__(self, idx=1, symbol=None, left=None, down=None):
+    def __init__(self, idx=1, symbol=None, left=None, down=None, child=None):
         self.idx = idx
         self.symbol = symbol
         self.left = left
         self.down = down
+        self.child = child
 
     def __repr__(self):
         return "("+str(self.idx)+")"+self.symbol
@@ -16,8 +17,8 @@ class Parser(object):
         self._two_symbols_rules = _two_symbols_rules
         self._lexicon_rules = _lexicon_rules
         self._lexicon = _lexicon
-        self.f_grammar = open("used_grammar.txt", "a+")
-        self.f_output = open("output.txt", "a+")
+        self.f_grammar = open("used_grammar.txt", "w")
+        self.f_output = open("output.txt", "w")
         self.idx = 1
 
     def write_used_grammar(self, used_grammar=[]):
@@ -32,12 +33,13 @@ class Parser(object):
             # 1. initialize using _lexicon
             token = input[i]
             for elem in self._lexicon[token]:
-                self.parse_table[i][i+1].append(Node(idx=self.idx, symbol=elem))
+                base_node = Node(self.idx, symbol=token)
+                self.parse_table[i][i+1].append(base_node)
                 self.idx += 1
              
                 # 2. initialize using _lexicon_rules
                 if elem in self._lexicon_rules:
-                    self.parse_table[i][i+1].append(Node(idx=self.idx, symbol=self._lexicon_rules[elem][0]))
+                    self.parse_table[i][i+1].append(Node(idx=self.idx, symbol=self._lexicon_rules[elem][0], child=base_node))
                     self.idx += 1
 
 
@@ -45,7 +47,6 @@ class Parser(object):
         _list = []
 
         # make new rule
-        if len(left_nodes)*len(down_nodes) == 0 : return []
         for left_node in left_nodes:
             for down_node in down_nodes:
                 new_rule = []
@@ -72,10 +73,31 @@ class Parser(object):
                     if i >= j : continue
                     else:
                         self.parse_table[i][j] += self.fill_table(self.parse_table[i][k], self.parse_table[k][j])
+        self.print_tree(len(sentence))
 
 
-        print(sentence)
-        
-        pprint(self.parse_table)
+    def dfs(self, node=None, _visited=[], _output=""):
+        if node.idx not in _visited:
+            _visited.append(node.idx)
+            _output += "(" + node.symbol + " "
+            if node.left == None and node.down == None:
+                if node.child != None :
+                    _output += node.child.symbol
+                _output += ")"
+                return _visited, _output
+            if node.left.idx not in _visited:
+                _visited, _output = self.dfs(node=node.left, _visited=_visited, _output=_output)
+            if node.down.idx not in _visited:
+                _visited, _output = self.dfs(node=node.down, _visited=_visited, _output=_output)
+            _output += ")"
+        return _visited, _output
+
+
+    def print_tree(self, input_len):
+        roots = [node for node in self.parse_table[0][input_len] if node.symbol=="S"]
+        for root in roots:
+            visited, final_output = self.dfs(node=root, _visited=[], _output="")
+            self.f_output.write(final_output+"\n")
+        self.f_output.write("\n")
 
 
